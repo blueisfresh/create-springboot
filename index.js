@@ -100,6 +100,27 @@ program
       );
     }
 
+    // Step 5b: Rename Java test package folder
+    const oldTestPackagePath = path.join(
+      projectName,
+      "src/test/java/com/blueisfresh/bootguard"
+    );
+    const newTestPackagePath = path.join(
+      projectName,
+      `src/test/java/com/${packageBase}/${sanitizedName}`
+    );
+
+    // Ensure parent dirs exist
+    fs.mkdirSync(path.dirname(newTestPackagePath), { recursive: true });
+
+    // Move the folder
+    if (fs.existsSync(oldTestPackagePath)) {
+      fs.renameSync(oldTestPackagePath, newTestPackagePath);
+      console.log(
+        `📂 Renamed test package folder to com.${packageBase}.${sanitizedName}`
+      );
+    }
+
     // Step 6: Delete old com/blueisfresh folder (force remove everything)
     const oldBasePath = path.join(projectName, "src/main/java/com/blueisfresh");
     if (fs.existsSync(oldBasePath)) {
@@ -108,6 +129,23 @@ program
         console.log("🧹 Removed old com.blueisfresh package completely");
       } catch (err) {
         console.error("⚠️ Failed to remove old com.blueisfresh folder:", err);
+      }
+    }
+
+    // Step 6b: Delete old com/blueisfresh test folder
+    const oldTestBasePath = path.join(
+      projectName,
+      "src/test/java/com/blueisfresh"
+    );
+    if (fs.existsSync(oldTestBasePath)) {
+      try {
+        fs.rmSync(oldTestBasePath, { recursive: true, force: true });
+        console.log("🧹 Removed old com.blueisfresh test package completely");
+      } catch (err) {
+        console.error(
+          "⚠️ Failed to remove old com.blueisfresh test folder:",
+          err
+        );
       }
     }
 
@@ -130,6 +168,25 @@ program
       `👉 ./mvnw spring-boot:run -Dspring-boot.run.profiles=${profile}`
     );
   });
+
+// Step 8: Rename BootguardApplicationTests.java
+const oldTestFile = path.join(
+  projectName,
+  `src/test/java/com/${packageBase}/${sanitizedName}/BootguardApplicationTests.java`
+);
+const newTestFile = path.join(
+  projectName,
+  `src/test/java/com/${packageBase}/${sanitizedName}/${capitalize(
+    sanitizedName
+  )}ApplicationTests.java`
+);
+
+if (fs.existsSync(oldTestFile)) {
+  fs.renameSync(oldTestFile, newTestFile);
+  console.log(
+    `📝 Renamed test class to ${capitalize(sanitizedName)}ApplicationTests.java`
+  );
+}
 
 program.parse();
 
@@ -161,4 +218,8 @@ function replaceInFiles(dir, search, replace) {
 
 function sanitizeForPackage(name) {
   return name.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+}
+
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
 }
