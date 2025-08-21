@@ -50,23 +50,37 @@ program
 
     console.log("📦 Template cloned!");
 
-    // Step 3: Copy correct profile config
+    // Step 3: Update spring.profiles.active in application.properties
     const appPropsPath = path.join(
       projectName,
       "src/main/resources/application.properties"
     );
-    const profileFile = `application-${profile}.properties`;
-    const profilePath = path.join(
-      projectName,
-      "src/main/resources",
-      profileFile
+
+    let appProps = fs.readFileSync(appPropsPath, "utf-8");
+
+    // Replace the spring.profiles.active line
+    if (appProps.includes("spring.profiles.active=")) {
+      appProps = appProps.replace(
+        /spring\.profiles\.active=.*/,
+        `spring.profiles.active=${profile}`
+      );
+    } else {
+      // If not present, append it
+      appProps += `\nspring.profiles.active=${profile}\n`;
+    }
+
+    fs.writeFileSync(appPropsPath, appProps);
+    console.log(
+      `⚙️  Set spring.profiles.active=${profile} in application.properties`
     );
 
-    if (fs.existsSync(profilePath)) {
-      fs.copyFileSync(profilePath, appPropsPath);
-      console.log(`⚙️  Applied profile: ${profile}`);
-    } else {
-      console.warn(`⚠️ Profile file not found: ${profileFile}`);
+    // Step 3b: If dev profile, delete resources/db folder
+    if (profile === "dev") {
+      const dbFolder = path.join(projectName, "src/main/resources/db");
+      if (fs.existsSync(dbFolder)) {
+        fs.rmSync(dbFolder, { recursive: true, force: true });
+        console.log("🗑️ Deleted resources/db folder for dev profile");
+      }
     }
 
     // Step 4: Replace everywhere
@@ -162,31 +176,83 @@ program
       `<groupId>com.${packageBase}</groupId>`
     );
 
+    // Step 8: Rename BootguardApplication.java
+    const oldMainFile = path.join(
+      projectName,
+      `src/main/java/com/${packageBase}/${sanitizedName}/BootguardApplication.java`
+    );
+    const newMainFile = path.join(
+      projectName,
+      `src/main/java/com/${packageBase}/${sanitizedName}/${capitalize(
+        sanitizedName
+      )}Application.java`
+    );
+
+    if (fs.existsSync(oldMainFile)) {
+      let content = fs.readFileSync(oldMainFile, "utf-8");
+
+      // Replace class name
+      content = content.replace(
+        /public class BootguardApplication/,
+        `public class ${capitalize(sanitizedName)}Application`
+      );
+
+      // Replace SpringApplication.run reference
+      content = content.replace(
+        /SpringApplication\.run\(BootguardApplication\.class, args\);/,
+        `SpringApplication.run(${capitalize(
+          sanitizedName
+        )}Application.class, args);`
+      );
+
+      fs.writeFileSync(oldMainFile, content);
+
+      fs.renameSync(oldMainFile, newMainFile);
+      console.log(
+        `📝 Renamed main class to ${capitalize(sanitizedName)}Application.java`
+      );
+    }
+
+    // Step 9: Rename BootguardApplicationTests.java
+    const oldTestFile = path.join(
+      projectName,
+      `src/test/java/com/${packageBase}/${sanitizedName}/BootguardApplicationTests.java`
+    );
+    const newTestFile = path.join(
+      projectName,
+      `src/test/java/com/${packageBase}/${sanitizedName}/${capitalize(
+        sanitizedName
+      )}ApplicationTests.java`
+    );
+
+    if (fs.existsSync(oldTestFile)) {
+      let testContent = fs.readFileSync(oldTestFile, "utf-8");
+      // Replace class name inside the test file
+      testContent = testContent
+        .replace(
+          /public class BootguardApplicationTests/,
+          `public class ${capitalize(sanitizedName)}ApplicationTests`
+        )
+        .replace(
+          /BootguardApplication\.class/,
+          `${capitalize(sanitizedName)}Application.class`
+        );
+      fs.writeFileSync(oldTestFile, testContent);
+
+      fs.renameSync(oldTestFile, newTestFile);
+      console.log(
+        `📝 Renamed test class to ${capitalize(
+          sanitizedName
+        )}ApplicationTests.java`
+      );
+    }
+
     console.log(`✅ Project ${projectName} is ready!`);
     console.log(`👉 cd ${projectName}`);
     console.log(
       `👉 ./mvnw spring-boot:run -Dspring-boot.run.profiles=${profile}`
     );
-  });
-
-// Step 8: Rename BootguardApplicationTests.java
-const oldTestFile = path.join(
-  projectName,
-  `src/test/java/com/${packageBase}/${sanitizedName}/BootguardApplicationTests.java`
-);
-const newTestFile = path.join(
-  projectName,
-  `src/test/java/com/${packageBase}/${sanitizedName}/${capitalize(
-    sanitizedName
-  )}ApplicationTests.java`
-);
-
-if (fs.existsSync(oldTestFile)) {
-  fs.renameSync(oldTestFile, newTestFile);
-  console.log(
-    `📝 Renamed test class to ${capitalize(sanitizedName)}ApplicationTests.java`
-  );
-}
+  }); // <-- closes .action
 
 program.parse();
 
