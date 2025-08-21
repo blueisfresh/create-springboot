@@ -1,0 +1,14 @@
+{
+  "name": "create-springboot",
+  "version": "1.0.0",
+  "description": "CLI to bootstrap a Spring Boot project with JWT, roles, refresh tokens",
+  "type": "module",
+  "bin": {
+    "create-springboot": "./index.js"
+  },
+  "dependencies": {
+    "commander": "^14.0.0",
+    "degit": "^2.8.4",
+    "inquirer": "^12.9.3"
+  }
+}
