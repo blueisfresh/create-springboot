@@ -3,8 +3,6 @@
 A **Node.js CLI tool** to bootstrap a new project from the [BootGuard 🛡️](https://github.com/blueisfresh/bootguard) Spring Boot template.  
 It automatically clones the template, renames packages, updates configuration, and sets up profiles so you can start coding right away.
 
----
-
 ## 🚀 Features
 - Interactive CLI (powered by [commander](https://www.npmjs.com/package/commander) + [inquirer](https://www.npmjs.com/package/inquirer))
 - Clones the [BootGuard](https://github.com/blueisfresh/bootguard) template
@@ -14,8 +12,6 @@ It automatically clones the template, renames packages, updates configuration, a
 - Updates `spring.profiles.active` in `application.properties`
 - Deletes `resources/db` folder when using **dev** profile
 - Preserves important defaults (`spring.application.name`, `jwt.secret`, `cors` config, etc.)
-
----
 
 ## 🛠️ Installation
 
@@ -35,8 +31,6 @@ Now you can run:
 create-springboot my-api
 ```
 
----
-
 ## 📦 Usage
 
 ```bash
@@ -53,8 +47,6 @@ You’ll be prompted for:
 - **Spring profile** → `dev (SQLite)` or `prod (Postgres)`
 - **Java package base** → e.g. your username (`xamarin` → `com.xamarin.myapi`)
 
----
-
 ## 📂 What It Does
 
 - Clones the [BootGuard](https://github.com/blueisfresh/bootguard) template into `my-api/`
@@ -70,8 +62,6 @@ You’ll be prompted for:
   - `BootguardApplicationTests.java` → `MyapiApplicationTests.java`
 - Replaces all `com.blueisfresh.bootguard` references with `com.<yourname>.<project>`
 - If **dev** profile is chosen → deletes `src/main/resources/db` folder
-
----
 
 ## 🔑 Example
 
@@ -96,10 +86,6 @@ Output:
 👉 ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
----
-
 ## 📖 Related
 
 - [BootGuard 🛡️](https://github.com/blueisfresh/bootguard) — the Spring Boot template this CLI is based on.
-
----
